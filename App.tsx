@@ -12,6 +12,8 @@ import 'firebase/compat/firestore';
 import Constants from 'expo-constants';
 import { FIREBASE_CONFIG } from './firebaseConfig';
 
+console.log("🔥 Firebase API Key:", Constants.expoConfig?.extra?.FIREBASE_API_KEY);
+
 if (!firebase.apps.length) {
   firebase.initializeApp(FIREBASE_CONFIG);
 }
@@ -53,22 +55,61 @@ function MapScreen() {
 }
 
 function ProfileScreen() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+      setUser(user);
+    });
+
+    // Set persistence to local (stays logged in across sessions)
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+      .catch((error) => {
+        console.warn("Persistence error:", error);
+      });
+
+    return () => unsubscribe();
+  }, []);
+
   const handleLogin = async () => {
     try {
-      await firebase.auth().signInAnonymously();
-      alert('Logged in anonymously!');
+      const email = "test@example.com";
+      const password = "testpassword";
+
+      await firebase.auth().signInWithEmailAndPassword(email, password);
+      alert("Logged in!");
     } catch (error) {
-      alert(error.message);
+      console.error("Login error:", error);
+      alert("Login failed: " + error.message);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await firebase.auth().signOut();
+      alert("Logged out!");
+    } catch (error) {
+      alert("Logout failed: " + error.message);
     }
   };
 
   return (
     <View style={styles.centered}>
-      <Text>User Profile</Text>
-      <Button title="Login Anonymously" onPress={handleLogin} />
+      {user ? (
+        <>
+          <Text>Welcome, {user.email || "User"}!</Text>
+          <Button title="Log Out" onPress={handleLogout} />
+        </>
+      ) : (
+        <>
+          <Text>Log In to Continue</Text>
+          <Button title="Log In" onPress={handleLogin} />
+        </>
+      )}
     </View>
   );
 }
+
 
 function PaymentsScreen() {
   return (
