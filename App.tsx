@@ -1,6 +1,5 @@
-// voltuoso-mvp-starter
-// Technologies: React Native (Expo), Firebase, Stripe, Google Maps
-
+// --- App.tsx ---
+// Main application file for Expo-based MVP
 import React, { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, Button, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -10,19 +9,11 @@ import * as Location from 'expo-location';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
-
-// Firebase Config (use .env to load this securely in production)
-const firebaseConfig = {
-  apiKey: 'FIREBASE_AUTH_API_KEY',
-  authDomain: 'FIREBASE_AUTH_DOMAIN',
-  projectId: 'FIREBASE_PROJECT_ID',
-  storageBucket: 'FIREBASE_STORAGE_BUCKET',
-  messagingSenderId: 'FIREBASE_MESSAGING_SENDER_ID',
-  appId: 'FIREBASE_APP_ID',
-};
+import Constants from 'expo-constants';
+import { FIREBASE_CONFIG } from './firebaseConfig';
 
 if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(FIREBASE_CONFIG);
 }
 
 const Tab = createBottomTabNavigator();
@@ -38,16 +29,13 @@ function MapScreen() {
         alert('Permission to access location was denied');
         return;
       }
-
       let loc = await Location.getCurrentPositionAsync({});
       setLocation(loc.coords);
       setLoading(false);
     })();
   }, []);
 
-  if (loading) {
-    return <ActivityIndicator style={{ flex: 1 }} size="large" />;
-  }
+  if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" />;
 
   return (
     <MapView
